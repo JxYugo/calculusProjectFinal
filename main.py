@@ -1,11 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
-from sympy import symbols, lambdify, sympify
+from sympy import symbols, lambdify, sympify, diff, integrate
 import tkinter as tk
 from tkinter import messagebox, ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 
 # Numerical derivative
 def numerical_derivative(fx, x_vals, order=1, h=1e-5):
@@ -16,7 +15,6 @@ def numerical_derivative(fx, x_vals, order=1, h=1e-5):
     else:
         raise ValueError("Only 1st and 2nd derivatives are supported.")
 
-
 # Numerical integration
 def numerical_integral(fx, x_vals):
     x_start = x_vals[0]
@@ -25,7 +23,6 @@ def numerical_integral(fx, x_vals):
         val, _ = quad(fx, x_start, x)
         result.append(val)
     return np.array(result)
-
 
 # GUI Application
 class CalculusVisualizer:
@@ -60,6 +57,16 @@ class CalculusVisualizer:
         self.canvas = FigureCanvasTkAgg(self.fig, master=root)
         self.canvas.get_tk_widget().grid(row=3, column=0, columnspan=4)
 
+        # Labels to show function, derivative, and integral
+        self.func_label = tk.Label(root, text="Function: ", fg="blue", anchor="w", font=("Arial", 10, "bold"), wraplength=600)
+        self.func_label.grid(row=4, column=0, columnspan=4, sticky="w", padx=10)
+
+        self.deriv_label = tk.Label(root, text="Derivative: ", fg="red", anchor="w", font=("Arial", 10, "bold"), wraplength=600)
+        self.deriv_label.grid(row=5, column=0, columnspan=4, sticky="w", padx=10)
+
+        self.integral_label = tk.Label(root, text="Integral: ", fg="green", anchor="w", font=("Arial", 10, "bold"), wraplength=600)
+        self.integral_label.grid(row=6, column=0, columnspan=4, sticky="w", padx=10)
+
     def plot(self):
         x = symbols('x')
         func_str = self.func_entry.get()
@@ -86,6 +93,16 @@ class CalculusVisualizer:
             y_vals = fx(x_vals)
             dy_vals = numerical_derivative(fx, x_vals, order=order)
             integral_vals = numerical_integral(fx, x_vals)
+
+            # Symbolic computation
+            deriv_expr = diff(expr, x, order)
+            integral_expr = integrate(expr, x)
+
+            # Display symbolic expressions
+            self.func_label.config(text=f"Function: f(x) = {str(expr)}")
+            self.deriv_label.config(text=f"Derivative: f'(x) = {str(deriv_expr)}")
+            self.integral_label.config(text=f"Integral: ∫f(x)dx = {str(integral_expr)}")
+
         except Exception as e:
             messagebox.showerror("Error", f"Computation failed: {e}")
             return
@@ -108,7 +125,6 @@ class CalculusVisualizer:
             messagebox.showinfo("Saved", "Plot saved as 'calculus_plot_gui.png'")
         except Exception as e:
             messagebox.showerror("Save Error", f"Could not save plot: {e}")
-
 
 # Launch GUI
 if __name__ == "__main__":
